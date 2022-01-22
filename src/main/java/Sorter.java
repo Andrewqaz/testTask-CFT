@@ -91,7 +91,7 @@ public class Sorter {
         String[] arrayA = new String[lengthArrayA];
         System.arraycopy(arraySrc, 0, arrayA, 0, lengthArrayA);
 
-        int lengthArrayB = arraySrc.length - arraySrc.length / 2;
+        Integer lengthArrayB = arraySrc.length - arraySrc.length / 2;
         String[] arrayB = new String[lengthArrayB];
         System.arraycopy(arraySrc, arraySrc.length / 2, arrayB, 0, lengthArrayB);
 
@@ -100,6 +100,7 @@ public class Sorter {
 
         return mergeStringArray(arraySrc, arrayA, arrayB);
     }
+
 
     public static Integer[] mergeIntArray(Integer[] arraySrc, Integer[] arrayA, Integer[] arrayB) {
         int positionA = 0;
@@ -148,10 +149,10 @@ public class Sorter {
                 positionB++;
             } else if (arrayA[positionA].compareTo(arrayB[positionB]) == 0) {
                 arraySrc[i] = arrayA[positionA];
+                i++;
                 arraySrc[i] = arrayB[positionB];
                 positionA++;
                 positionB++;
-                i++;
             }
         }
         return arraySrc;
@@ -164,68 +165,105 @@ public class Sorter {
 
             Integer intPast = null;
 
-            while (intPast == null) {
-                try {
-                    intPast = Integer.parseInt(line);
-                } catch (NumberFormatException e) {
-                    line = reader.readLine();
+            if (line != null) {
+                while (intPast == null) {
+                    try {
+                        intPast = Integer.parseInt(line);
+                    } catch (NumberFormatException e) {
+                        line = reader.readLine();
+                    }
                 }
             }
             line = reader.readLine();
             Integer intNext = null;
 
-            while (line !=null){
-                try {
-                    intNext = Integer.parseInt(line);
-                } catch (NumberFormatException e) {
+            if (line!=null) {
+                while (line != null) {
+                    try {
+                        intNext = Integer.parseInt(line);
+                    } catch (NumberFormatException e) {
+                        line = reader.readLine();
+                        continue;
+                    }
+                    if (intPast > intNext) {
+                        isSorted = false;
+                        break;
+                    }
+                    intPast = intNext;
                     line = reader.readLine();
-                    continue;
-                }
-                if (intPast>intNext){
-                    isSorted = false;
-                    break;
-                }
-                intPast = intNext;
-                line = reader.readLine();
 
-                try {
-                    intNext = Integer.parseInt(line);
-                } catch (NumberFormatException e) {
-                    line= reader.readLine();
+                    try {
+                        intNext = Integer.parseInt(line);
+                    } catch (NumberFormatException e) {
+                        line = reader.readLine();
+                    }
                 }
             }
 
         } catch (FileNotFoundException e) {
-            System.out.println("Не верно введено имя файла, либо файл "+"\""+srcFile.getName()+"\" не существует" +
+            System.out.println("Не верно введено имя файла, либо файл " + "\"" + srcFile.getName() + "\" не существует" +
                     "попробуйте перезапустить программу указав верное имя файла...");
         } catch (IOException e) {
-            System.out.println("непредвиденная ошибка ввода/вывода, не удалось прочитать файл "+"\""+
-                    srcFile.getName()+"\"");
+            System.out.println("непредвиденная ошибка ввода/вывода, не удалось прочитать файл " + "\"" +
+                    srcFile.getName() + "\"");
         }
         return isSorted;
     }
 
-    public static boolean isFileStringSorted(File srcFile) throws IOException {
+    public static boolean isFileStringSorted(File srcFile) {
         boolean isSorted = true;
         try (BufferedReader reader = new BufferedReader(new FileReader(srcFile))) {
             String line = reader.readLine();
-            while (line != null) {
-                List<String> strings = new LinkedList<>();
-                int counter = 0;
-                while (counter < 1000 && line != null) {
-                    strings.add(line);
+            String pastString = line;
+            String nextString = null;
+            if (line.contains(" ")||line.equals("")) {
+                while (line != null) {
                     line = reader.readLine();
-                    counter++;
+                    if (!line.contains(" ")) {
+                        pastString = line;
+                        break;
+                    }
                 }
-                isSorted = Sorter.isSortedStrings(strings);
             }
+
+            line = reader.readLine();
+            nextString = line;
+            if (line.contains(" ")||line.equals("")) {
+                while (line != null) {
+                    line = reader.readLine();
+                    if (!line.contains(" ")) {
+                        nextString = line;
+                        break;
+                    }
+                }
+            }
+
+            while (line != null) {
+                if (pastString.compareTo(nextString) > 0) {
+                    isSorted = false;
+                    break;
+                }
+                pastString = nextString.toString();
+                line = reader.readLine();
+                nextString = line;
+                if (line.contains(" ")||line.equals("")) {
+                    while (line != null) {
+                        line = reader.readLine();
+                        if (!line.contains(" ")) {
+                            nextString = line;
+                            break;
+                        }
+                    }
+                }
+            }
+
         } catch (FileNotFoundException e) {
-            //todo
+            System.out.println("Не верно введено имя файла, либо файл " + "\"" + srcFile.getName() + "\" не существует" +
+                    "попробуйте перезапустить программу указав верное имя файла...");
         } catch (IOException e) {
-            //todo
+            System.out.println("непредвиденная ошибка ввода/вывода, не удалось прочитать файл " + "\"" +
+                    srcFile.getName() + "\"");
         }
-
-
         return isSorted;
     }
 

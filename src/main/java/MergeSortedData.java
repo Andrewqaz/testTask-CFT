@@ -5,55 +5,55 @@ import java.util.List;
 
 public class MergeSortedData {
 
-    public static List<Integer> mergeInt(List<Integer> first, List<Integer> second) {
-        LinkedList<Integer> result = new LinkedList<>();
-        while (!first.isEmpty() && !second.isEmpty()) {
-            if (first.get(0) < second.get(0)) {
-                result.add(first.get(0));
-                first.remove(0);
-            } else if (second.get(0) < first.get(0)) {
-                result.add(second.get(0));
-                second.remove(0);
-            } else if (first.get(0).equals(second.get(0))) {
-                result.add(first.get(0));
-                result.add(second.get(0));
-                first.remove(0);
-                second.remove(0);
-            }
-        }
+//    public static List<Integer> mergeInt(List<Integer> first, List<Integer> second) {
+//        LinkedList<Integer> result = new LinkedList<>();
+//        while (!first.isEmpty() && !second.isEmpty()) {
+//            if (first.get(0) < second.get(0)) {
+//                result.add(first.get(0));
+//                first.remove(0);
+//            } else if (second.get(0) < first.get(0)) {
+//                result.add(second.get(0));
+//                second.remove(0);
+//            } else if (first.get(0).equals(second.get(0))) {
+//                result.add(first.get(0));
+//                result.add(second.get(0));
+//                first.remove(0);
+//                second.remove(0);
+//            }
+//        }
+//
+//        if (!first.isEmpty()) {
+//            result.addAll(first);
+//        } else if (!second.isEmpty()) {
+//            result.addAll(second);
+//        }
+//        return result;
+//    }
 
-        if (!first.isEmpty()) {
-            result.addAll(first);
-        } else if (!second.isEmpty()) {
-            result.addAll(second);
-        }
-        return result;
-    }
-
-    public static List<String> mergeString(List<String> first, List<String> second) {
-        LinkedList<String> result = new LinkedList<>();
-
-        while (!first.isEmpty() && !second.isEmpty()) {
-            if (first.get(0).compareTo(second.get(0)) < 0) {
-                result.add(first.get(0));
-                first.remove(0);
-            } else if (second.get(0).compareTo(first.get(0)) < 0) {
-                result.add(second.get(0));
-                second.remove(0);
-            } else if (first.get(0).compareTo(second.get(0)) == 0) {
-                result.add(first.get(0));
-                result.add(second.get(0));
-                first.remove(0);
-                second.remove(0);
-            }
-        }
-        if (!first.isEmpty()) {
-            result.addAll(first);
-        } else if (!second.isEmpty()) {
-            result.addAll(second);
-        }
-        return result;
-    }
+//    public static List<String> mergeString(List<String> first, List<String> second) {
+//        LinkedList<String> result = new LinkedList<>();
+//
+//        while (!first.isEmpty() && !second.isEmpty()) {
+//            if (first.get(0).compareTo(second.get(0)) < 0) {
+//                result.add(first.get(0));
+//                first.remove(0);
+//            } else if (second.get(0).compareTo(first.get(0)) < 0) {
+//                result.add(second.get(0));
+//                second.remove(0);
+//            } else if (first.get(0).compareTo(second.get(0)) == 0) {
+//                result.add(first.get(0));
+//                result.add(second.get(0));
+//                first.remove(0);
+//                second.remove(0);
+//            }
+//        }
+//        if (!first.isEmpty()) {
+//            result.addAll(first);
+//        } else if (!second.isEmpty()) {
+//            result.addAll(second);
+//        }
+//        return result;
+//    }
 
     public static File mergeSortedIntFiles(File fileOne, File fileTwo, File outFile) {
         try (BufferedReader readerOne = new BufferedReader(new FileReader(fileOne));
@@ -125,6 +125,70 @@ public class MergeSortedData {
                 }
             }
         } catch (IOException e) {
+        }
+        return outFile;
+    }
+
+    public static File mergeSortedStringFiles(File fileOne, File fileTwo, File outFile) {
+        try (BufferedReader readerOne = new BufferedReader(new FileReader(fileOne));
+             BufferedReader readerTwo = new BufferedReader(new FileReader(fileTwo));
+             BufferedWriter writerOut = new BufferedWriter(new FileWriter(outFile))) {
+            String lineFromOne = readerOne.readLine();
+            String lineFromTwo = readerTwo.readLine();
+            if (lineFromOne == null && lineFromTwo == null) {
+                writerOut.write("Нет данных в исходных файлах");
+                return outFile;
+            }
+            while (true) {
+                if (lineFromOne != null && lineFromTwo == null) {
+                    if (lineFromOne.contains(" ") || lineFromOne.equals("")) {
+                        lineFromOne = readerOne.readLine();
+                        continue;
+                    }
+                    writerOut.write(lineFromOne);
+                    writerOut.newLine();
+                    lineFromOne = readerOne.readLine();
+                } else if (lineFromTwo != null && lineFromOne == null) {
+                    if (lineFromTwo.contains(" ") || lineFromTwo.equals("")) {
+                        lineFromTwo = readerOne.readLine();
+                        continue;
+                    }
+                    writerOut.write(lineFromTwo);
+                    writerOut.newLine();
+                    lineFromTwo = readerTwo.readLine();
+                } else if (lineFromOne != null && lineFromTwo != null) {
+                    if (lineFromOne.contains(" ") || lineFromOne.equals("")) {
+                        lineFromOne = readerOne.readLine();
+                        continue;
+                    }
+                    if (lineFromTwo.contains(" ") || lineFromOne.equals("")) {
+                        lineFromTwo = readerOne.readLine();
+                        continue;
+                    }
+                    if (lineFromOne.compareTo(lineFromTwo) < 0) {
+                        writerOut.write(lineFromOne);
+                        writerOut.newLine();
+                        lineFromOne = readerOne.readLine();
+                    } else if (lineFromTwo.compareTo(lineFromOne) < 0) {
+                        writerOut.write(lineFromTwo);
+                        writerOut.newLine();
+                        lineFromTwo = readerTwo.readLine();
+                    } else if (lineFromOne.compareTo(lineFromTwo) == 0) {
+                        writerOut.write(lineFromOne);
+                        writerOut.newLine();
+                        writerOut.write(lineFromTwo);
+                        writerOut.newLine();
+                        lineFromOne = readerOne.readLine();
+                        lineFromTwo = readerTwo.readLine();
+                    }
+                }
+                if (lineFromOne == null && lineFromTwo == null) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Ошибка доступа к одному из файлов!!!\n" +
+                    "Данные, или их часть, могли быть потеряны! \n" + e.getMessage());
         }
         return outFile;
     }
