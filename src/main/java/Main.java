@@ -1,7 +1,4 @@
-import org.apache.commons.io.input.ReversedLinesFileReader;
-
-import java.io.*;
-import java.util.*;
+import java.util.Random;
 
 public class Main {
     private static final String PREF_OUT_FILE_NAME = "out";
@@ -20,12 +17,15 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//
-        File one = new File("one.txt");
-        File two = new File("two.txt");
 
-        FileHandler handler = new FileHandler();
-        handler.mergeStringFiles(one, two);
+
+//        File one = new File("one.txt");
+//        File two = new File("two.txt");
+//
+//        FileHandler handler = new FileHandler();
+//        handler.mergeStringFiles(one, two);
+
+
 
 //        BufferedWriter oneWriter = new BufferedWriter(new FileWriter(one));
 //        BufferedWriter twoWriter = new BufferedWriter(new FileWriter(two));
