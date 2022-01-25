@@ -1,67 +1,6 @@
 import java.io.*;
-import java.util.List;
 
 public class Sorter {
-    public static boolean isSortedInts(List<Integer> list) {
-        boolean isSorted = true;
-
-        for (int i = 0; i < list.size(); i++) {
-            if (list.size() - i <= 1) {
-                break;
-            }
-            if (list.get(i) > list.get(i + 1)) {
-                isSorted = false;
-                break;
-            }
-        }
-        return isSorted;
-    }
-
-    public static boolean isReversSortedInts(List<Integer> list) {
-        boolean isSorted = true;
-
-        for (int i = 0; i < list.size(); i++) {
-            if (list.size() - i <= 1) {
-                break;
-            }
-            if (list.get(i) < list.get(i + 1)) {
-                isSorted = false;
-                break;
-            }
-        }
-        return isSorted;
-    }
-
-    public static boolean isSortedStrings(List<String> list) {
-        boolean isSorted = true;
-
-        for (int i = 0; i < list.size(); i++) {
-            if (list.size() - i <= 1) {
-                break;
-            }
-            if (list.get(i).compareTo(list.get(i + 1)) > 0) {
-                isSorted = false;
-                break;
-            }
-        }
-        return isSorted;
-    }
-
-    public static boolean isReverseSortedStrings(List<String> list) {
-        boolean isSorted = true;
-
-        for (int i = 0; i < list.size(); i++) {
-            if (list.size() - i <= 1) {
-                break;
-            }
-            if (list.get(i).compareTo(list.get(i + 1)) < 0) {
-                isSorted = false;
-                break;
-            }
-        }
-        return isSorted;
-    }
-
     public static Integer[] sortIntArray(Integer[] arraySrc) {
         if (arraySrc.length < 2) {
             return arraySrc;
@@ -175,7 +114,7 @@ public class Sorter {
                         }
                     }
                 }
-            }else {
+            } else {
                 return true;
             }
 
@@ -202,7 +141,7 @@ public class Sorter {
                         line = reader.readLine();
                     }
                 }
-            }else {
+            } else {
                 return true;
             }
 
@@ -278,6 +217,14 @@ public class Sorter {
                     srcFile.getName() + "\"");
         }
         return true;
+    }
+
+    public static boolean isFileSorted(File file, Type fileType) {
+        if (fileType.equals(Type.INT)) {
+            return isFileIntSorted(file);
+        } else {
+            return isFileStringSorted(file);
+        }
     }
 
 

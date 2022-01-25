@@ -14,211 +14,47 @@ public class DoWork {
         srcFiles = new ArrayList<>();
     }
 
-    public void filesHandling(String[] args) {
+    public void filesHandlingNew(String[] args) {
         setCommandLineArgs(args);
         Scanner cmd = new Scanner(System.in);
+
         if (fileType.equals(Type.INT)) {
             System.out.println("Выбран режим обработки файлов содержащих целые числа (Integer)." +
                     "\nВсе строки содержащие пробелы, либо любые символы кроме: " +
                     "\n-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, " +
                     "будут проигнорированы!\n");
-            if (srcFiles.size() == 1) {
-                System.out.println("\nПри запуске указан только один исходный файл: " + srcFiles.get(0)+"\n");
-                if (directOrder) {
-                    fileHandler.mergeIntFiles(srcFiles.get(0), null, outFile, cmd);
-                } else {
-                    File tempFile = fileHandler.getTempFile();
-                    tempFile.deleteOnExit();
-
-                    fileHandler.mergeIntFiles(srcFiles.get(0), null, tempFile, cmd);
-                    fileHandler.reversFile(tempFile, outFile);
-                }
-            } else if (srcFiles.size() == 2) {
-                if (directOrder) {
-                    fileHandler.mergeIntFiles(srcFiles.get(0), srcFiles.get(1), outFile, cmd);
-                } else {
-                    File tempFile = fileHandler.getTempFile();
-                    tempFile.deleteOnExit();
-
-                    fileHandler.mergeIntFiles(srcFiles.get(0), srcFiles.get(1), tempFile, cmd);
-                    fileHandler.reversFile(tempFile, outFile);
-
-                }
-            } else if (srcFiles.size() > 2) {
-                List<File> partOne = new LinkedList<>();
-                List<File> partTwo = new LinkedList<>();
-                List<File> partRes = new LinkedList<>();
-
-                for (int i = 0; i < srcFiles.size(); i++) {
-                    if (srcFiles.size() / 2 <= i) {
-                        partOne.add(srcFiles.get(i));
-                    } else {
-                        partTwo.add(srcFiles.get(i));
-                    }
-                }
-
-                while (true) {
-                    if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() > 2) {
-                        for (int i = 0; i < partRes.size(); i++) {
-                            if (partRes.size() / 2 <= i) {
-                                partOne.add(partRes.get(i));
-                            } else {
-                                partTwo.add(partRes.get(i));
-                            }
-                            partRes.remove(i);
-                        }
-                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 2) {
-                        if (directOrder) {
-                            fileHandler.mergeIntFiles(partRes.get(0), partRes.get(1), outFile, cmd);
-                        } else {
-                            File tempFile = fileHandler.getTempFile();
-                            tempFile.deleteOnExit();
-
-                            fileHandler.mergeIntFiles(partRes.get(0), partRes.get(1), tempFile, cmd);
-                            fileHandler.reversFile(tempFile, outFile);
-                            break;
-                        }
-                        break;
-                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 1) {
-                        if (directOrder) {
-                            fileHandler.mergeIntFiles(partRes.get(0), null, outFile, cmd);
-                        } else {
-                            File tempFile = fileHandler.getTempFile();
-                            tempFile.deleteOnExit();
-                            fileHandler.mergeIntFiles(partRes.get(0), partRes.get(1), tempFile, cmd);
-                            fileHandler.reversFile(tempFile, outFile);
-                            tempFile.deleteOnExit();
-                        }
-                        break;
-                    }
-
-                    while (true) {
-                        File tempRes = fileHandler.getTempFile();
-                        tempRes.deleteOnExit();
-
-                        if (!partOne.isEmpty() && !partTwo.isEmpty()) {
-                            fileHandler.mergeIntFiles(partOne.get(0), partTwo.get(0), tempRes, cmd);
-                            partOne.remove(0);
-                            partTwo.remove(0);
-                            partRes.add(tempRes);
-                        } else if (!partOne.isEmpty() && partTwo.isEmpty()) {
-                            fileHandler.mergeIntFiles(partOne.get(0), null, tempRes, cmd);
-                            partOne.remove(0);
-                            partRes.add(tempRes);
-                            if (partOne.isEmpty()) {
-                                break;
-                            }
-                        } else if (!partTwo.isEmpty() && partOne.isEmpty()) {
-                            fileHandler.mergeIntFiles(partTwo.get(0), null, tempRes, cmd);
-                            partTwo.remove(0);
-                            partRes.add(tempRes);
-                            if (partTwo.isEmpty()) {
-                                break;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
-            }
-        } else if (fileType.equals(Type.STR)) {
+        } else {
             System.out.println("Выбран режим обработки файлов содержащих строковые данные (String)." +
                     "\nВсе пустые строки и строки содержащие пробелы будут проигнорированы!\n");
-            if (srcFiles.size() == 1) {
-                System.out.println("\nПри запуске указан только один исходный файл: " + srcFiles.get(0)+"\n");
-                if (directOrder) {
-                    fileHandler.mergeStringFiles(srcFiles.get(0), null, outFile, cmd);
+        }
+        if (srcFiles.size() == 1) {
+            System.out.println("\nПри запуске указан только один исходный файл: " + srcFiles.get(0) + "\n");
+            if (Sorter.isFileSorted(srcFiles.get(0), fileType)) {
+                File tempFile = MergeSortedData.getTempFile();
+                tempFile.deleteOnExit();
+                File result = MergeSortedData.mergeSortedFiles(srcFiles.get(0), tempFile, fileType);
+                if (result.renameTo(outFile)) {
+                    System.out.println("\nПрограмма успешно завершена\n");
                 } else {
-                    File tempFile = fileHandler.getTempFile();
-                    tempFile.deleteOnExit();
-
-                    fileHandler.mergeStringFiles(srcFiles.get(0), null, tempFile, cmd);
-                    fileHandler.reversFile(tempFile, outFile);
+                    System.out.println("\nОшибка при именовании выходного файла\n");
                 }
-            } else if (srcFiles.size() == 2) {
+            } else {
+                File result = sortingNeed(srcFiles.get(0), fileType, cmd);
                 if (directOrder) {
-                    fileHandler.mergeStringFiles(srcFiles.get(0), srcFiles.get(1), outFile, cmd);
+                    outFile.delete();
+                    result.renameTo(outFile);
                 } else {
-                    File tempFile = fileHandler.getTempFile();
-                    tempFile.deleteOnExit();
+                    fileHandler.reversFile(result, outFile);
 
-                    fileHandler.mergeStringFiles(srcFiles.get(0), srcFiles.get(1), tempFile, cmd);
-                    fileHandler.reversFile(tempFile, outFile);
                 }
-            } else if (srcFiles.size() > 2) {
-                List<File> partOne = new LinkedList<>();
-                List<File> partTwo = new LinkedList<>();
-                List<File> partRes = new LinkedList<>();
-
-                for (int i = 0; i < srcFiles.size(); i++) {
-                    if (srcFiles.size() - srcFiles.size() / 2 <= i) {
-                        partOne.add(srcFiles.get(i));
-                    } else {
-                        partTwo.add(srcFiles.get(i));
-                    }
-                }
-
-                while (true) {
-                    if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() > 2) {
-                        for (int i = 0; i < partRes.size(); i++) {
-                            if (partRes.size() - partRes.size() / 2 <= i) {
-                                partOne.add(partRes.get(i));
-                            } else {
-                                partTwo.add(partRes.get(i));
-                            }
-                            partRes.remove(i);
-                        }
-                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 2) {
-                        if (directOrder) {
-                            fileHandler.mergeStringFiles(partRes.get(0), partRes.get(1), outFile, cmd);
-                        }else {
-                            File tempFile = fileHandler.getTempFile();
-                            tempFile.deleteOnExit();
-
-                            fileHandler.mergeStringFiles(partRes.get(0), partRes.get(1), tempFile, cmd);
-                            fileHandler.reversFile(tempFile, outFile);
-                        }
-                        break;
-                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 1) {
-                        if (directOrder) {
-                            fileHandler.mergeStringFiles(partRes.get(0), null, outFile, cmd);
-                        } else {
-                            File tempFile = fileHandler.getTempFile();
-                            fileHandler.mergeStringFiles(partRes.get(0), null, tempFile, cmd);
-                            fileHandler.reversFile(tempFile, outFile);
-                            tempFile.deleteOnExit();
-                        }
-                        break;
-                    }
-
-                    while (true) {
-                        File tempRes = fileHandler.getTempFile();
-                        tempRes.deleteOnExit();
-
-                        if (!partOne.isEmpty() && !partTwo.isEmpty()) {
-                            fileHandler.mergeStringFiles(partOne.get(0), partTwo.get(0), tempRes, cmd);
-                            partOne.remove(0);
-                            partTwo.remove(0);
-                            partRes.add(tempRes);
-                        } else if (!partOne.isEmpty() && partTwo.isEmpty()) {
-                            fileHandler.mergeStringFiles(partOne.get(0), null, tempRes, cmd);
-                            partOne.remove(0);
-                            partRes.add(tempRes);
-                            if (partOne.isEmpty()) {
-                                break;
-                            }
-                        } else if (!partTwo.isEmpty() && partOne.isEmpty()) {
-                            fileHandler.mergeStringFiles(partTwo.get(0), null, tempRes, cmd);
-                            partTwo.remove(0);
-                            partRes.add(tempRes);
-                            if (partTwo.isEmpty()) {
-                                break;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
+            }
+        } else {
+            List<File> sortedFiles = allFilesSortingNeed(srcFiles, fileType, cmd);
+            File file = MergeSortedData.mergeFilesList(sortedFiles, fileType);
+            if (directOrder) {
+                file.renameTo(outFile);
+            } else {
+                fileHandler.reversFile(file, outFile);
             }
         }
     }
@@ -408,5 +244,117 @@ public class DoWork {
             System.out.println(HELP);
             System.exit(0);
         }
+    }
+
+    private File sortingNeed(File file, Type fileType, Scanner cmd) {
+        String userAnswer;
+        boolean userChoice = false;
+        while (!userChoice) {
+            System.out.println("файл: " + file.getName() + " частично или полностью не отсортирован, \n" +
+                    "попытаться отсортировать его? (возможно это займет продолжительное время и потребует \n" +
+                    "дополнительного места на диске, в зависимости от размера файла...)" +
+                    "\nY - да, попытаться отсортировать файл " + file.getName() +
+                    "\nN - нет, попытаться провести слияние без сортировки" +
+                    "\nQ - выйти из программы\n");
+            userAnswer = cmd.nextLine();
+            switch (userAnswer.toUpperCase()) {
+                case "Y": {
+                    return fileHandler.sortFile(file, fileType);
+                }
+                case "N": {
+                    userChoice = true;
+                    break;
+                }
+                case "Q": {
+                    System.exit(0);
+                }
+                default: {
+                    System.out.println("\nВведена неверная команда" +
+                            "\nY - да, попытаться отсортировать файл" + outFile.getName() +
+                            "\nN - нет, попытаться провести слияние без сортировки" +
+                            "\nQ - выйти из программы\n");
+                }
+            }
+        }
+        File temp = MergeSortedData.getTempFile();
+        temp.deleteOnExit();
+        return MergeSortedData.mergeSortedFiles(file, temp, fileType);
+    }
+
+    private List<File> allFilesSortingNeed(List<File> srcFiles, Type fileType, Scanner cmd) {
+        boolean allSorted = true;
+        for (File file : srcFiles) {
+            if (!Sorter.isFileSorted(file, fileType)) {
+                allSorted = false;
+                break;
+            }
+        }
+        List<File> result = new LinkedList<>();
+        if (allSorted) {
+            return srcFiles;
+        } else {
+            UserAnswer userAnswer = null;
+            String answerCmd;
+            boolean userChoice = false;
+            while (!userChoice) {
+                System.out.println("\nОдин или несколько исходных файлов не отсортированы!" +
+                        "\nОтсортировать все не отсортированные файлы? (возможно это займет" +
+                        " продолжительное время и потребует дополнительного места на диске, " +
+                        "в зависимости от размера файла...)" +
+                        "\nY - да, попытаться отсортировать все не отсортированные файлы" +
+                        "\nN - нет, попытаться провести слияние без сортировки" +
+                        "\nE - принять решение по каждому файлу отдельно" +
+                        "\nQ - выйти из программы\n");
+                answerCmd = cmd.nextLine();
+                switch (answerCmd.toUpperCase()) {
+                    case "Y": {
+                        userAnswer = UserAnswer.YES;
+                        userChoice = true;
+                        break;
+                    }
+                    case "N": {
+                        userAnswer = UserAnswer.NO;
+                        userChoice = true;
+                        break;
+                    }
+                    case "E": {
+                        userAnswer = UserAnswer.EACH;
+                        userChoice = true;
+                        break;
+                    }
+                    case "Q": {
+                        System.exit(0);
+                    }
+                    default: {
+                        System.out.println("\nВведена неверная команда" +
+                                "\nY - да, попытаться отсортировать файл" + outFile.getName() +
+                                "\nN - нет, попытаться провести слияние без сортировки" +
+                                "\nE - принять решение по каждому файлу отдельно" +
+                                "\nQ - выйти из программы\n");
+                    }
+                }
+            }
+            switch (userAnswer) {
+                case YES: {
+                    srcFiles.forEach(file -> {
+                        result.add(fileHandler.sortFile(file, fileType));
+                    });
+                    break;
+                }
+                case NO: {
+                    return srcFiles;
+                }
+                case EACH: {
+                    srcFiles.forEach(file -> {
+                        if (Sorter.isFileSorted(file, fileType)) {
+                            result.add(file);
+                        } else {
+                            result.add(sortingNeed(file, fileType, cmd));
+                        }
+                    });
+                }
+            }
+        }
+        return result;
     }
 }
