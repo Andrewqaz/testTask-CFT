@@ -8,9 +8,9 @@
     <artifactId>testTask-CFT</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-<!--    <properties>-->
-<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
-<!--    </properties>-->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
 
@@ -24,6 +24,8 @@
 
     </dependencies>
 
+
+
     <build>
         <plugins>
             <plugin>
@@ -33,6 +35,15 @@
                 <configuration>
                     <source>8</source>
                     <target>8</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <mainClass>Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

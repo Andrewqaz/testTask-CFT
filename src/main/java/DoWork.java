@@ -1,46 +1,242 @@
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class DoWork {
-    private static FileHandler fileHandler;
-    private static Type fileType;
-    private static boolean directOrder;
-    private static List<File> srcFiles;
-    private static File outFile;
-    private static final String HELP = "" +
-            "\n===========================================================================================" +
-            "\nСПРАВКА:" +
-            "\nДля корректной работы программы необходимо установить настройки с помощью аргументов " +
-            "\nкоммандной строки. Дополнительными параметрами при запуске необходимо указать: " +
-            "\n 1. режим сортировки (-a или -d), необязательный, по умолчанию сортировка по возрастанию;" +
-            "\n 2. тип данных (-s или -i), обязательный;" +
-            "\n 3. имя выходного файла, обязательное;" +
-            "\n 4. остальные параметры – имена входных файлов, не менее одного." +
-            "\n" +
-            "\nПример запуска: ........ testTask-CFT -a -i out.txt srcOne.txt srcTwo.txt";
-    //todo поправить пример запуска
+    private final FileHandler fileHandler;
+    private Type fileType;
+    private boolean directOrder;
+    private List<File> srcFiles;
+    private File outFile;
 
-    static {
+    public DoWork() {
         fileHandler = new FileHandler();
         directOrder = true;
-        srcFiles = new LinkedList<>();
+        srcFiles = new ArrayList<>();
     }
 
-
-    public static void main(String[] args) {
+    public void filesHandling(String[] args) {
         setCommandLineArgs(args);
-        System.out.println("тип:" + fileType);
-        System.out.println("порядок: " + directOrder);
-        System.out.println("выход: " + outFile.getName());
-        srcFiles.forEach(file -> {
-            System.out.println("вход №"+(srcFiles.indexOf(file)+1)+": "+file.getName());
-        });
+        Scanner cmd = new Scanner(System.in);
+        if (fileType.equals(Type.INT)) {
+            System.out.println("Выбран режим обработки файлов содержащих целые числа (Integer)." +
+                    "\nВсе строки содержащие пробелы, либо любые символы кроме: " +
+                    "\n-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, " +
+                    "будут проигнорированы!\n");
+            if (srcFiles.size() == 1) {
+                System.out.println("\nПри запуске указан только один исходный файл: " + srcFiles.get(0)+"\n");
+                if (directOrder) {
+                    fileHandler.mergeIntFiles(srcFiles.get(0), null, outFile, cmd);
+                } else {
+                    File tempFile = fileHandler.getTempFile();
+                    tempFile.deleteOnExit();
+
+                    fileHandler.mergeIntFiles(srcFiles.get(0), null, tempFile, cmd);
+                    fileHandler.reversFile(tempFile, outFile);
+                }
+            } else if (srcFiles.size() == 2) {
+                if (directOrder) {
+                    fileHandler.mergeIntFiles(srcFiles.get(0), srcFiles.get(1), outFile, cmd);
+                } else {
+                    File tempFile = fileHandler.getTempFile();
+                    tempFile.deleteOnExit();
+
+                    fileHandler.mergeIntFiles(srcFiles.get(0), srcFiles.get(1), tempFile, cmd);
+                    fileHandler.reversFile(tempFile, outFile);
+
+                }
+            } else if (srcFiles.size() > 2) {
+                List<File> partOne = new LinkedList<>();
+                List<File> partTwo = new LinkedList<>();
+                List<File> partRes = new LinkedList<>();
+
+                for (int i = 0; i < srcFiles.size(); i++) {
+                    if (srcFiles.size() / 2 <= i) {
+                        partOne.add(srcFiles.get(i));
+                    } else {
+                        partTwo.add(srcFiles.get(i));
+                    }
+                }
+
+                while (true) {
+                    if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() > 2) {
+                        for (int i = 0; i < partRes.size(); i++) {
+                            if (partRes.size() / 2 <= i) {
+                                partOne.add(partRes.get(i));
+                            } else {
+                                partTwo.add(partRes.get(i));
+                            }
+                            partRes.remove(i);
+                        }
+                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 2) {
+                        if (directOrder) {
+                            fileHandler.mergeIntFiles(partRes.get(0), partRes.get(1), outFile, cmd);
+                        } else {
+                            File tempFile = fileHandler.getTempFile();
+                            tempFile.deleteOnExit();
+
+                            fileHandler.mergeIntFiles(partRes.get(0), partRes.get(1), tempFile, cmd);
+                            fileHandler.reversFile(tempFile, outFile);
+                            break;
+                        }
+                        break;
+                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 1) {
+                        if (directOrder) {
+                            fileHandler.mergeIntFiles(partRes.get(0), null, outFile, cmd);
+                        } else {
+                            File tempFile = fileHandler.getTempFile();
+                            tempFile.deleteOnExit();
+                            fileHandler.mergeIntFiles(partRes.get(0), partRes.get(1), tempFile, cmd);
+                            fileHandler.reversFile(tempFile, outFile);
+                            tempFile.deleteOnExit();
+                        }
+                        break;
+                    }
+
+                    while (true) {
+                        File tempRes = fileHandler.getTempFile();
+                        tempRes.deleteOnExit();
+
+                        if (!partOne.isEmpty() && !partTwo.isEmpty()) {
+                            fileHandler.mergeIntFiles(partOne.get(0), partTwo.get(0), tempRes, cmd);
+                            partOne.remove(0);
+                            partTwo.remove(0);
+                            partRes.add(tempRes);
+                        } else if (!partOne.isEmpty() && partTwo.isEmpty()) {
+                            fileHandler.mergeIntFiles(partOne.get(0), null, tempRes, cmd);
+                            partOne.remove(0);
+                            partRes.add(tempRes);
+                            if (partOne.isEmpty()) {
+                                break;
+                            }
+                        } else if (!partTwo.isEmpty() && partOne.isEmpty()) {
+                            fileHandler.mergeIntFiles(partTwo.get(0), null, tempRes, cmd);
+                            partTwo.remove(0);
+                            partRes.add(tempRes);
+                            if (partTwo.isEmpty()) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (fileType.equals(Type.STR)) {
+            System.out.println("Выбран режим обработки файлов содержащих строковые данные (String)." +
+                    "\nВсе пустые строки и строки содержащие пробелы будут проигнорированы!\n");
+            if (srcFiles.size() == 1) {
+                System.out.println("\nПри запуске указан только один исходный файл: " + srcFiles.get(0)+"\n");
+                if (directOrder) {
+                    fileHandler.mergeStringFiles(srcFiles.get(0), null, outFile, cmd);
+                } else {
+                    File tempFile = fileHandler.getTempFile();
+                    tempFile.deleteOnExit();
+
+                    fileHandler.mergeStringFiles(srcFiles.get(0), null, tempFile, cmd);
+                    fileHandler.reversFile(tempFile, outFile);
+                }
+            } else if (srcFiles.size() == 2) {
+                if (directOrder) {
+                    fileHandler.mergeStringFiles(srcFiles.get(0), srcFiles.get(1), outFile, cmd);
+                } else {
+                    File tempFile = fileHandler.getTempFile();
+                    tempFile.deleteOnExit();
+
+                    fileHandler.mergeStringFiles(srcFiles.get(0), srcFiles.get(1), tempFile, cmd);
+                    fileHandler.reversFile(tempFile, outFile);
+                }
+            } else if (srcFiles.size() > 2) {
+                List<File> partOne = new LinkedList<>();
+                List<File> partTwo = new LinkedList<>();
+                List<File> partRes = new LinkedList<>();
+
+                for (int i = 0; i < srcFiles.size(); i++) {
+                    if (srcFiles.size() - srcFiles.size() / 2 <= i) {
+                        partOne.add(srcFiles.get(i));
+                    } else {
+                        partTwo.add(srcFiles.get(i));
+                    }
+                }
+
+                while (true) {
+                    if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() > 2) {
+                        for (int i = 0; i < partRes.size(); i++) {
+                            if (partRes.size() - partRes.size() / 2 <= i) {
+                                partOne.add(partRes.get(i));
+                            } else {
+                                partTwo.add(partRes.get(i));
+                            }
+                            partRes.remove(i);
+                        }
+                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 2) {
+                        if (directOrder) {
+                            fileHandler.mergeStringFiles(partRes.get(0), partRes.get(1), outFile, cmd);
+                        }else {
+                            File tempFile = fileHandler.getTempFile();
+                            tempFile.deleteOnExit();
+
+                            fileHandler.mergeStringFiles(partRes.get(0), partRes.get(1), tempFile, cmd);
+                            fileHandler.reversFile(tempFile, outFile);
+                        }
+                        break;
+                    } else if (partOne.isEmpty() && partTwo.isEmpty() && partRes.size() == 1) {
+                        if (directOrder) {
+                            fileHandler.mergeStringFiles(partRes.get(0), null, outFile, cmd);
+                        } else {
+                            File tempFile = fileHandler.getTempFile();
+                            fileHandler.mergeStringFiles(partRes.get(0), null, tempFile, cmd);
+                            fileHandler.reversFile(tempFile, outFile);
+                            tempFile.deleteOnExit();
+                        }
+                        break;
+                    }
+
+                    while (true) {
+                        File tempRes = fileHandler.getTempFile();
+                        tempRes.deleteOnExit();
+
+                        if (!partOne.isEmpty() && !partTwo.isEmpty()) {
+                            fileHandler.mergeStringFiles(partOne.get(0), partTwo.get(0), tempRes, cmd);
+                            partOne.remove(0);
+                            partTwo.remove(0);
+                            partRes.add(tempRes);
+                        } else if (!partOne.isEmpty() && partTwo.isEmpty()) {
+                            fileHandler.mergeStringFiles(partOne.get(0), null, tempRes, cmd);
+                            partOne.remove(0);
+                            partRes.add(tempRes);
+                            if (partOne.isEmpty()) {
+                                break;
+                            }
+                        } else if (!partTwo.isEmpty() && partOne.isEmpty()) {
+                            fileHandler.mergeStringFiles(partTwo.get(0), null, tempRes, cmd);
+                            partTwo.remove(0);
+                            partRes.add(tempRes);
+                            if (partTwo.isEmpty()) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
-    private static void setCommandLineArgs(String[] args) {
+    private void setCommandLineArgs(String[] args) {
         boolean directOrderCmd = false;
+        String HELP = "" +
+                "\n===========================================================================================" +
+                "\nСПРАВКА:" +
+                "\nДля корректной работы программы необходимо установить настройки с помощью аргументов " +
+                "\nкоммандной строки. Дополнительными параметрами при запуске необходимо указать: " +
+                "\n 1. режим сортировки (-a или -d), необязательный, по умолчанию сортировка по возрастанию;" +
+                "\n 2. тип данных (-s или -i), обязательный;" +
+                "\n 3. имя выходного файла, обязательное;" +
+                "\n 4. остальные параметры – имена входных файлов, не менее одного." +
+                "\n" +
+                "\nПример запуска > mvn exec:java -Dexec.args=\"-d -s out.txt one.txt two.txt three.txt four.txt five.txt\"";
         if (args.length > 0) {
             switch (args[0]) {
                 case "-a": {
@@ -112,7 +308,7 @@ public class DoWork {
                 if (args.length > 3) {
                     for (int i = 3; i < args.length; i++) {
                         File file = new File(args[i]);
-                        if (file.exists()) {
+                        if (file.exists() && file.isFile()) {
                             srcFiles.add(file);
                         } else {
                             System.out.println("\nНеверно указано имя входного файла \"" + file.getName() + "\"," +
@@ -121,21 +317,21 @@ public class DoWork {
                                     "\n");
                         }
                     }
-                    if (srcFiles.isEmpty()){
+                    if (srcFiles.isEmpty()) {
                         System.out.println("\nНе найдено ни одного входного файла! " +
                                 "\nПерезапустите программу, указав верные имена " +
                                 "сущществующих входных файлов для обработки, " +
-                                "не менее одного!");
+                                "не менее одного!\n");
                         System.out.println(HELP);
                         System.exit(0);
                     }
-                }else {
+                } else {
                     System.out.println("\nНе указан ни один входной файл для обработки!" +
-                            "\nПерезапустите программу, указав имена входных файлов, не менее одного!");
+                            "\nПерезапустите программу, указав имена входных файлов, не менее одного!\n");
                     System.out.println(HELP);
                     System.exit(0);
                 }
-            }else if (!directOrderCmd){
+            } else if (!directOrderCmd) {
                 switch (args[0]) {
                     case "-s": {
                         fileType = Type.STR;
@@ -173,7 +369,7 @@ public class DoWork {
                 if (args.length > 2) {
                     for (int i = 2; i < args.length; i++) {
                         File file = new File(args[i]);
-                        if (file.exists()) {
+                        if (file.exists() && file.isFile()) {
                             srcFiles.add(file);
                         } else {
                             System.out.println("\nНеверно указано имя входного файла \"" + file.getName() + "\"," +
@@ -182,22 +378,22 @@ public class DoWork {
                                     "\n");
                         }
                     }
-                    if (srcFiles.isEmpty()){
+                    if (srcFiles.isEmpty()) {
                         System.out.println("\nНе найдено ни одного входного файла! " +
                                 "\nПерезапустите программу, указав верные имена " +
                                 "сущществующих входных файлов для обработки, " +
-                                "не менее одного!");
+                                "не менее одного!\n");
                         System.out.println(HELP);
                         System.exit(0);
                     }
-                }else {
+                } else {
                     System.out.println("\nНе указан ни один входной файл для обработки!" +
-                            "\nПерезапустите программу, указав имена входных файлов, не менее одного!");
+                            "\nПерезапустите программу, указав имена входных файлов, не менее одного!\n");
                     System.out.println(HELP);
                     System.exit(0);
                 }
-            }else {
-                System.out.println("\nНе указаны все необходимые параметры!");
+            } else {
+                System.out.println("\nНе указаны все необходимые параметры!\n");
                 System.out.println(HELP);
                 System.exit(0);
             }

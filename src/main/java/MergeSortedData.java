@@ -9,7 +9,6 @@ public class MergeSortedData {
             String lineFromOne = readerOne.readLine();
             String lineFromTwo = readerTwo.readLine();
             if (lineFromOne == null && lineFromTwo == null) {
-                writerOut.write("Нет данных в исходных файлах");
                 return outFile;
             }
             while (true) {
@@ -83,7 +82,6 @@ public class MergeSortedData {
             String lineFromOne = readerOne.readLine();
             String lineFromTwo = readerTwo.readLine();
             if (lineFromOne == null && lineFromTwo == null) {
-                writerOut.write("Нет данных в исходных файлах");
                 return outFile;
             }
             while (true) {
