@@ -14,8 +14,9 @@ public class DoWork {
         srcFiles = new ArrayList<>();
     }
 
-    public void filesHandlingNew(String[] args) {
+    public void filesHandling(String[] args) {
         setCommandLineArgs(args);
+        outFile.delete();
         Scanner cmd = new Scanner(System.in);
 
         if (fileType.equals(Type.INT)) {

@@ -1,5 +1,6 @@
 import java.io.*;
 
+
 public class Sorter {
     public static Integer[] sortIntArray(Integer[] arraySrc) {
         if (arraySrc.length < 2) {
@@ -10,7 +11,7 @@ public class Sorter {
         Integer[] arrayA = new Integer[lengthArrayA];
         System.arraycopy(arraySrc, 0, arrayA, 0, lengthArrayA);
 
-        Integer lengthArrayB = arraySrc.length - arraySrc.length / 2;
+        int lengthArrayB = arraySrc.length - arraySrc.length / 2;
         Integer[] arrayB = new Integer[lengthArrayB];
         System.arraycopy(arraySrc, arraySrc.length / 2, arrayB, 0, lengthArrayB);
 
@@ -40,32 +41,32 @@ public class Sorter {
     }
 
 
-    public static Integer[] mergeIntArray(Integer[] arraySrc, Integer[] arrayA, Integer[] arrayB) {
+    public static Integer[] mergeIntArray(Integer[] arrayResult, Integer[] arrayA, Integer[] arrayB) {
         int positionA = 0;
         int positionB = 0;
 
-        for (int i = 0; i < arraySrc.length; i++) {
+        for (int i = 0; i < arrayResult.length; i++) {
             if (positionA == arrayA.length) {
-                arraySrc[i] = arrayB[positionB];
+                arrayResult[i] = arrayB[positionB];
                 positionB++;
             } else if (positionB == arrayB.length) {
-                arraySrc[i] = arrayA[positionA];
+                arrayResult[i] = arrayA[positionA];
                 positionA++;
             } else if (arrayA[positionA] < arrayB[positionB]) {
-                arraySrc[i] = arrayA[positionA];
+                arrayResult[i] = arrayA[positionA];
                 positionA++;
             } else if (arrayB[positionB] < arrayA[positionA]) {
-                arraySrc[i] = arrayB[positionB];
+                arrayResult[i] = arrayB[positionB];
                 positionB++;
             } else if (arrayA[positionA].equals(arrayB[positionB])) {
-                arraySrc[i] = arrayA[positionA];
+                arrayResult[i] = arrayA[positionA];
                 i++;
-                arraySrc[i] = arrayB[positionB];
+                arrayResult[i] = arrayB[positionB];
                 positionA++;
                 positionB++;
             }
         }
-        return arraySrc;
+        return arrayResult;
     }
 
     public static String[] mergeStringArray(String[] arraySrc, String[] arrayA, String[] arrayB) {

@@ -3,13 +3,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MergeSortedData {
-    public static File getTempFile() {
-        String tempName = "tempFile";
-        File file = new File(tempName + ".txt");
+    public static File getFile(String fileName){
+        File file = new File(fileName + ".txt");
         if (file.exists()) {
             int count = 2;
             while (true) {
-                file = new File(tempName + "_" + count + ".txt");
+                file = new File(fileName + "_" + count + ".txt");
                 if (!file.exists()) {
                     try {
                         file.createNewFile();
@@ -31,6 +30,10 @@ public class MergeSortedData {
         return file;
     }
 
+    public static File getTempFile() {
+        String tempName = "tempFile";
+        return getFile(tempName);
+    }
 
     public static File mergeSortedIntFiles(File fileOne, File fileTwo, File outFile) {
         try (BufferedReader readerOne = new BufferedReader(new FileReader(fileOne));
